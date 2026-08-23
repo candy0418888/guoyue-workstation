@@ -665,6 +665,23 @@
             });
             html += '</tbody></table></div>';
         }
+
+        // Collected merchants detail (实收明细)
+        if (ot.collected_merchants && ot.collected_merchants.length > 0) {
+            html += '<div class="section-title">本周实收明细（' + ot.collected_merchants.length + '户）</div>';
+            html += '<div class="table-wrap"><table><thead><tr><th>商户名称</th><th>实收金额</th><th>收款类型</th></tr></thead><tbody>';
+            ot.collected_merchants.forEach(function(m) {
+                html += '<tr>';
+                html += '<td style="font-weight:500">' + esc(m.name) + '</td>';
+                html += '<td class="money text-success">' + money(m.amount) + '</td>';
+                html += '<td>' + esc(m.type) + '</td>';
+                html += '</tr>';
+            });
+            var totalCollected = ot.collected_merchants.reduce(function(s, m) { return s + m.amount; }, 0);
+            html += '<tr style="font-weight:600;background:var(--bg2)"><td style="text-align:right">合计（' + ot.collected_merchants.length + '户）</td>';
+            html += '<td class="money text-success">' + money(totalCollected) + '</td><td>—</td></tr>';
+            html += '</tbody></table></div>';
+        }
         html += '</div>';
 
         // === Tab 2: 到期续约率 ===
