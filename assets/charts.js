@@ -587,7 +587,7 @@
     }
 
     // ====== MODULE: COMPLIANCE (按期履约率统计) - 严格按Excel格式 ======
-    function renderOnTimeTable(ot, sectionTitle) {
+    function renderOnTimeTable(ot, sectionTitle, period) {
         var html = '';
         html += '<div class="section-title">' + sectionTitle + '</div>';
         html += '<div class="table-wrap"><table style="font-size:12px;min-width:1600px">';
@@ -620,14 +620,14 @@
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
         html += '<td style="text-align:center">国樾</td>';
-        // 户数 data
-        html += '<td class="money">' + ot.due_count + '</td>';
-        html += '<td class="money text-success">' + ot.paid_count + '</td>';
-        html += '<td class="money text-danger">' + ot.unpaid_no_plan_count + '</td>';
-        html += '<td class="money text-accent2">' + ot.unpaid_reduction_count + '</td>';
-        html += '<td class="money text-warning">' + ot.unpaid_deferred_count + '</td>';
-        html += '<td class="money text-muted">' + ot.unpaid_other_count + '</td>';
-        html += '<td class="money" style="font-weight:600">' + ot.unpaid_subtotal_count + '</td>';
+        // 户数 data - clickable
+        html += clickableCount(ot.due_count, 'onTime', period, 'due', '');
+        html += clickableCount(ot.paid_count, 'onTime', period, 'paid', 'text-success');
+        html += clickableCount(ot.unpaid_no_plan_count, 'onTime', period, 'unpaid_no_plan', 'text-danger');
+        html += clickableCount(ot.unpaid_reduction_count, 'onTime', period, 'unpaid_reduction', 'text-accent2');
+        html += clickableCount(ot.unpaid_deferred_count, 'onTime', period, 'unpaid_deferred', 'text-warning');
+        html += clickableCount(ot.unpaid_other_count, 'onTime', period, 'unpaid_other', 'text-muted');
+        html += clickableCount(ot.unpaid_subtotal_count, 'onTime', period, 'unpaid_subtotal', '');
         // 金额 data
         html += '<td class="money">' + money(ot.due_amount) + '</td>';
         html += '<td class="money text-success">' + money(ot.finance_paid != null ? ot.finance_paid : ot.paid_amount) + '</td>';
@@ -644,7 +644,16 @@
         return html;
     }
 
-    function renderRenewalTable(rn, sectionTitle, isCumulative) {
+    // Helper: generate a clickable count cell (only clickable when value > 0)
+    function clickableCount(value, type, period, category, cls) {
+        var baseCls = 'money ' + (cls || '');
+        if (value > 0) {
+            return '<td class="' + baseCls + ' clickable-num" onclick="showComplianceDetail(\'' + type + '\',\'' + period + '\',\'' + category + '\')">' + value + '</td>';
+        }
+        return '<td class="' + baseCls + '">' + value + '</td>';
+    }
+
+    function renderRenewalTable(rn, sectionTitle, isCumulative, period) {
         var html = '';
         html += '<div class="section-title">' + sectionTitle + '</div>';
         html += '<div class="table-wrap"><table style="font-size:13px;min-width:700px">';
@@ -667,9 +676,9 @@
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
         html += '<td style="text-align:center">国樾</td>';
-        html += '<td class="money">' + (rn.expiring_count || 0) + '</td>';
-        html += '<td class="money text-success">' + (rn.renewed_count || 0) + '</td>';
-        html += '<td class="money text-danger">' + (rn.vacated_count || 0) + '</td>';
+        html += clickableCount(rn.expiring_count || 0, 'renewal', period, 'expiring', '');
+        html += clickableCount(rn.renewed_count || 0, 'renewal', period, 'renewed', 'text-success');
+        html += clickableCount(rn.vacated_count || 0, 'renewal', period, 'vacated', 'text-danger');
         var rateText;
         if (rn.expiring_count > 0) {
             rateText = rn.renewal_rate.toFixed(1) + '%';
@@ -699,10 +708,10 @@
         // === Tab 1: 按期履约率 ===
         var ot = c.on_time;
         html += '<div class="compliance-tab" id="compliance-tab-onTime">';
-        html += renderOnTimeTable(ot.week, '本周明细（' + (c.week_start || '8.22') + '-' + (c.week_end || '8.28') + '）');
+        html += renderOnTimeTable(ot.week, '本周明细（' + (c.week_start || '8.22') + '-' + (c.week_end || '8.28') + '）', 'week');
         if (ot.cumulative) {
             html += '<div style="margin-top:24px;border-top:2px dashed var(--rule);padding-top:16px">';
-            html += renderOnTimeTable(ot.cumulative, '累计明细（8.1-8.28）');
+            html += renderOnTimeTable(ot.cumulative, '累计明细（8.1-8.28）', 'cumulative');
             html += '</div>';
         }
         html += '</div>';
@@ -710,10 +719,10 @@
         // === Tab 2: 到期续租率 ===
         var rn = c.renewal;
         html += '<div class="compliance-tab" id="compliance-tab-renewal" style="display:none">';
-        html += renderRenewalTable(rn.week, '本周明细（8.22-8.28）', false);
+        html += renderRenewalTable(rn.week, '本周明细（8.22-8.28）', false, 'week');
         if (rn.cumulative) {
             html += '<div style="margin-top:24px;border-top:2px dashed var(--rule);padding-top:16px">';
-            html += renderRenewalTable(rn.cumulative, '累计明细（8.1-8.28）', true);
+            html += renderRenewalTable(rn.cumulative, '累计明细（8.1-8.28）', true, 'cumulative');
             html += '</div>';
         }
         html += '</div>';
@@ -735,9 +744,24 @@
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
         html += '<td style="text-align:center">国樾</td>';
-        html += '<td class="money">' + money(uc.advance_amount || 0) + '</td>';
-        html += '<td class="money" style="font-weight:600">' + money(uc.week_start_unpaid) + '</td>';
-        html += '<td class="money" style="font-weight:600">' + money(uc.weekend_unpaid) + '</td>';
+        // 探收金额 - clickable when > 0
+        if ((uc.advance_amount || 0) > 0) {
+            html += '<td class="money clickable-num" onclick="showComplianceDetail(\'unpaid\',\'\',\'advance\')">' + money(uc.advance_amount || 0) + '</td>';
+        } else {
+            html += '<td class="money">' + money(uc.advance_amount || 0) + '</td>';
+        }
+        // 周初未收 - clickable when > 0
+        if ((uc.week_start_unpaid || 0) > 0) {
+            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'week_start\')">' + money(uc.week_start_unpaid) + '</td>';
+        } else {
+            html += '<td class="money" style="font-weight:600">' + money(uc.week_start_unpaid) + '</td>';
+        }
+        // 周末未收 - clickable when > 0
+        if ((uc.weekend_unpaid || 0) > 0) {
+            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'weekend\')">' + money(uc.weekend_unpaid) + '</td>';
+        } else {
+            html += '<td class="money" style="font-weight:600">' + money(uc.weekend_unpaid) + '</td>';
+        }
         var changeCls = uc.change_amount < 0 ? 'text-success' : 'text-danger';
         html += '<td class="money ' + changeCls + '" style="font-weight:600">' + (uc.change_amount >= 0 ? '+' : '') + money(uc.change_amount) + '</td>';
         var rateDisplay;
@@ -769,6 +793,155 @@
             el.style.color = 'var(--accent)';
             el.style.fontWeight = '500';
             el.style.marginBottom = '-2px';
+        }
+    };
+
+    // ====== COMPLIANCE DETAIL MODAL ======
+    window.showComplianceDetail = function(type, period, category) {
+        var c = D.compliance;
+        var merchants = [];
+        var title = '';
+
+        if (type === 'onTime') {
+            var ot = c.on_time[period];
+            var allDue = ot.due_merchants || [];
+            var periodLabel = period === 'week' ? '本周' : '累计';
+
+            switch (category) {
+                case 'due':
+                    merchants = allDue;
+                    title = periodLabel + '合同应收商户';
+                    break;
+                case 'paid':
+                    merchants = allDue.filter(function(m) { return m.collected > 0; });
+                    title = periodLabel + '合同实收商户';
+                    break;
+                case 'unpaid_no_plan':
+                    merchants = allDue.filter(function(m) { return m.category && m.category.indexOf('无方案') >= 0; });
+                    title = periodLabel + '未收-无方案商户';
+                    break;
+                case 'unpaid_reduction':
+                    merchants = allDue.filter(function(m) { return m.category && m.category.indexOf('减免') >= 0; });
+                    title = periodLabel + '未收-减免商户';
+                    break;
+                case 'unpaid_deferred':
+                    merchants = allDue.filter(function(m) { return m.category && m.category.indexOf('延期') >= 0; });
+                    title = periodLabel + '未收-延期商户';
+                    break;
+                case 'unpaid_other':
+                    merchants = allDue.filter(function(m) { return m.category && m.category.indexOf('其他') >= 0; });
+                    title = periodLabel + '未收-其他商户';
+                    break;
+                case 'unpaid_subtotal':
+                    merchants = allDue.filter(function(m) { return m.unpaid > 0; });
+                    title = periodLabel + '未收商户小计';
+                    break;
+            }
+
+            var modal = document.getElementById('modal-overlay');
+            document.getElementById('modal-title').textContent = title + '（' + merchants.length + '户）';
+            var body = document.getElementById('modal-body');
+            var html = '<div class="table-wrap" style="max-height:none;border:none"><table><thead><tr><th>序号</th><th>商户名称</th><th>应收（元）</th><th>实收（元）</th><th>分类</th><th>未收（元）</th><th>备注</th></tr></thead><tbody>';
+            var totalRecv = 0, totalColl = 0, totalUnpaid = 0;
+            merchants.forEach(function(m, i) {
+                totalRecv += m.receivable || 0;
+                totalColl += m.collected || 0;
+                totalUnpaid += m.unpaid || 0;
+                html += '<tr><td style="text-align:center">' + (i + 1) + '</td>' +
+                    '<td style="font-weight:500">' + esc(m.name) + '</td>' +
+                    '<td class="money">' + money(m.receivable || 0) + '</td>' +
+                    '<td class="money text-success">' + money(m.collected || 0) + '</td>' +
+                    '<td>' + esc(m.category || '') + '</td>' +
+                    '<td class="money ' + (m.unpaid > 0 ? 'text-danger' : '') + '">' + money(m.unpaid || 0) + '</td>' +
+                    '<td style="font-size:12px;color:var(--muted)">' + esc(m.remark || '') + '</td></tr>';
+            });
+            html += '<tr style="background:#f8fafc;font-weight:700">' +
+                '<td></td><td>合计（' + merchants.length + '户）</td>' +
+                '<td class="money">' + money(totalRecv) + '</td>' +
+                '<td class="money text-success">' + money(totalColl) + '</td>' +
+                '<td></td>' +
+                '<td class="money ' + (totalUnpaid > 0 ? 'text-danger' : '') + '">' + money(totalUnpaid) + '</td>' +
+                '<td></td></tr>';
+            html += '</tbody></table></div>';
+            body.innerHTML = html;
+            modal.classList.add('show');
+
+        } else if (type === 'renewal') {
+            var rn = c.renewal[period];
+            var periodLabel2 = period === 'week' ? '本周' : '累计';
+
+            switch (category) {
+                case 'expiring':
+                    merchants = rn.expiring_merchants || [];
+                    title = periodLabel2 + '合同到期商户';
+                    break;
+                case 'renewed':
+                    merchants = rn.renewed_merchants || [];
+                    title = periodLabel2 + '续租商户';
+                    break;
+                case 'vacated':
+                    merchants = rn.vacated_merchants || [];
+                    title = periodLabel2 + '退租商户';
+                    break;
+            }
+
+            var modal2 = document.getElementById('modal-overlay');
+            document.getElementById('modal-title').textContent = title + '（' + merchants.length + '户）';
+            var body2 = document.getElementById('modal-body');
+            var html2 = '<div class="table-wrap" style="max-height:none;border:none"><table><thead><tr><th>序号</th><th>商户名称</th><th>到期日</th><th>续租日</th></tr></thead><tbody>';
+            merchants.forEach(function(m, i) {
+                html2 += '<tr><td style="text-align:center">' + (i + 1) + '</td>' +
+                    '<td style="font-weight:500">' + esc(m.name) + '</td>' +
+                    '<td>' + esc(m.expire || '—') + '</td>' +
+                    '<td>' + esc(m.renewal || '—') + '</td></tr>';
+            });
+            html2 += '</tbody></table></div>';
+            body2.innerHTML = html2;
+            modal2.classList.add('show');
+
+        } else if (type === 'unpaid') {
+            var uc = c.unpaid_change;
+
+            switch (category) {
+                case 'advance':
+                    merchants = uc.early_collected_merchants || [];
+                    title = '探收金额商户';
+                    break;
+                case 'week_start':
+                    merchants = uc.week_start_unpaid_merchants || [];
+                    title = '周初未收商户';
+                    break;
+                case 'weekend':
+                    merchants = uc.current_unpaid_merchants || [];
+                    title = '周末未收商户';
+                    break;
+            }
+
+            var modal3 = document.getElementById('modal-overlay');
+            document.getElementById('modal-title').textContent = title + '（' + merchants.length + '户）';
+            var body3 = document.getElementById('modal-body');
+            var html3 = '<div class="table-wrap" style="max-height:none;border:none"><table><thead><tr><th>序号</th><th>商户名称</th><th>应收（元）</th><th>实收（元）</th><th>未收（元）</th><th>分类</th></tr></thead><tbody>';
+            var totalRecv3 = 0, totalColl3 = 0, totalUnpaid3 = 0;
+            merchants.forEach(function(m, i) {
+                totalRecv3 += m.receivable || 0;
+                totalColl3 += m.collected || 0;
+                totalUnpaid3 += m.unpaid || 0;
+                html3 += '<tr><td style="text-align:center">' + (i + 1) + '</td>' +
+                    '<td style="font-weight:500">' + esc(m.name) + '</td>' +
+                    '<td class="money">' + money(m.receivable || 0) + '</td>' +
+                    '<td class="money text-success">' + money(m.collected || 0) + '</td>' +
+                    '<td class="money ' + (m.unpaid > 0 ? 'text-danger' : '') + '">' + money(m.unpaid || 0) + '</td>' +
+                    '<td>' + esc(m.category || '') + '</td></tr>';
+            });
+            html3 += '<tr style="background:#f8fafc;font-weight:700">' +
+                '<td></td><td>合计（' + merchants.length + '户）</td>' +
+                '<td class="money">' + money(totalRecv3) + '</td>' +
+                '<td class="money text-success">' + money(totalColl3) + '</td>' +
+                '<td class="money ' + (totalUnpaid3 > 0 ? 'text-danger' : '') + '">' + money(totalUnpaid3) + '</td>' +
+                '<td></td></tr>';
+            html3 += '</tbody></table></div>';
+            body3.innerHTML = html3;
+            modal3.classList.add('show');
         }
     };
 
