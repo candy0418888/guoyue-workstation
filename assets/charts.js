@@ -587,23 +587,9 @@
     }
 
     // ====== MODULE: COMPLIANCE (按期履约率统计) ======
-    function renderCompliance() {
-        var c = D.compliance;
-        if (!c) return;
+    function renderOnTimeTable(ot, sectionTitle) {
         var html = '';
-        html += '<div class="page-header"><div><h2>按期履约率统计表</h2><div class="breadcrumb">每周五18:00前更新 · 统计周期：' + c.week_label + '</div></div></div>';
-
-        // Tab navigation
-        html += '<div class="tab-nav" style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--rule)">';
-        html += '<div class="tab-item active" onclick="switchComplianceTab(\'onTime\', this)" style="padding:10px 20px;cursor:pointer;border-bottom:3px solid var(--accent);margin-bottom:-2px;font-weight:500;color:var(--accent)">按期履约率</div>';
-        html += '<div class="tab-item" onclick="switchComplianceTab(\'renewal\', this)" style="padding:10px 20px;cursor:pointer;color:var(--muted)">到期续约率</div>';
-        html += '<div class="tab-item" onclick="switchComplianceTab(\'unpaid\', this)" style="padding:10px 20px;cursor:pointer;color:var(--muted)">未收增减率</div>';
-        html += '</div>';
-
-        // === Tab 1: 按期履约率 ===
-        var ot = c.on_time;
-        html += '<div class="compliance-tab" id="compliance-tab-onTime">';
-        html += '<div class="section-title">本周按期履约情况</div>';
+        html += '<div class="section-title">' + sectionTitle + '</div>';
         html += '<div class="table-wrap"><table style="font-size:13px">';
         html += '<thead><tr>';
         html += '<th rowspan="2" style="min-width:100px">铁三角团队</th>';
@@ -649,26 +635,27 @@
         html += '<td class="money" style="font-weight:600;color:var(--accent)">' + ot.amount_compliance_rate.toFixed(1) + '%</td>';
         html += '</tr></tbody></table></div>';
 
-        // Detail section
+        // Detail section: due merchants
         if (ot.due_merchants && ot.due_merchants.length > 0) {
-            html += '<div class="section-title">本周到期商户明细</div>';
-            html += '<div class="table-wrap"><table><thead><tr><th>商户名称</th><th>应收</th><th>实收</th><th>分类</th><th>未收金额</th></tr></thead><tbody>';
+            html += '<div class="section-title">到期应收商户明细</div>';
+            html += '<div class="table-wrap"><table><thead><tr><th>商户名称</th><th>应收</th><th>实收</th><th>分类</th><th>未收金额</th><th>备注</th></tr></thead><tbody>';
             ot.due_merchants.forEach(function(m) {
-                var unpaid = m.receivable - m.collected;
+                var unpaid = m.unpaid != null ? m.unpaid : (m.receivable - m.collected);
                 html += '<tr>';
                 html += '<td style="font-weight:500">' + esc(m.name) + '</td>';
                 html += '<td class="money">' + money(m.receivable) + '</td>';
                 html += '<td class="money text-success">' + money(m.collected) + '</td>';
                 html += '<td>' + esc(m.category) + '</td>';
                 html += '<td class="money ' + (unpaid > 0 ? 'text-danger' : 'text-success') + '">' + (unpaid > 0 ? money(unpaid) : '—') + '</td>';
+                html += '<td style="font-size:12px;color:var(--muted)">' + esc(m.remark || '') + '</td>';
                 html += '</tr>';
             });
             html += '</tbody></table></div>';
         }
 
-        // Collected merchants detail (实收明细)
+        // Collected merchants detail
         if (ot.collected_merchants && ot.collected_merchants.length > 0) {
-            html += '<div class="section-title">本周实收明细（' + ot.collected_merchants.length + '户）</div>';
+            html += '<div class="section-title">实收明细（' + ot.collected_merchants.length + '户）</div>';
             html += '<div class="table-wrap"><table><thead><tr><th>商户名称</th><th>实收金额</th><th>收款类型</th></tr></thead><tbody>';
             ot.collected_merchants.forEach(function(m) {
                 html += '<tr>';
@@ -682,22 +669,22 @@
             html += '<td class="money text-success">' + money(totalCollected) + '</td><td>—</td></tr>';
             html += '</tbody></table></div>';
         }
-        html += '</div>';
+        return html;
+    }
 
-        // === Tab 2: 到期续约率 ===
-        var rn = c.renewal;
-        html += '<div class="compliance-tab" id="compliance-tab-renewal" style="display:none">';
-        html += '<div class="section-title">本周到期续约情况</div>';
+    function renderRenewalSection(rn, sectionTitle) {
+        var html = '';
+        html += '<div class="section-title">' + sectionTitle + '</div>';
         html += '<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">';
-        html += kpiCard('本周到期户数', rn.expiring_count + '户', 'accent', '点击查看明细', 'showRenewalDetail(\'expiring\')');
-        html += kpiCard('本周续租户数', rn.renewed_count + '户', 'success', '点击查看明细', 'showRenewalDetail(\'renewed\')');
-        html += kpiCard('本周退租户数', rn.vacated_count + '户', 'danger', '按实际办理更新', null);
+        html += kpiCard('到期户数', rn.expiring_count + '户', 'accent', rn.expiring_count > 0 ? '点击查看明细' : '无到期', rn.expiring_count > 0 ? 'showRenewalDetail(\'expiring\')' : null);
+        html += kpiCard('续租户数', rn.renewed_count + '户', 'success', rn.renewed_count > 0 ? '点击查看明细' : '无续租', rn.renewed_count > 0 ? 'showRenewalDetail(\'renewed\')' : null);
+        html += kpiCard('退租户数', rn.vacated_count + '户', 'danger', '按实际办理更新', null);
         var rr = rn.expiring_count > 0 ? rn.renewal_rate.toFixed(1) + '%' : '—';
-        html += kpiCard('本周续租率', rr, rn.renewal_rate >= 80 ? 'success' : 'warning', rn.expiring_count > 0 ? '续租/到期' : '本周无到期', null);
+        html += kpiCard('续租率', rr, rn.expiring_count > 0 && rn.renewal_rate >= 80 ? 'success' : 'warning', rn.expiring_count > 0 ? '续租/到期' : '无到期', null);
         html += '</div>';
 
         if (rn.expiring_merchants && rn.expiring_merchants.length > 0) {
-            html += '<div class="section-title">本周到期商户</div>';
+            html += '<div class="section-title">到期商户</div>';
             html += '<div class="table-wrap"><table><thead><tr><th>商户名称</th><th>到期日期</th><th>续约日期</th></tr></thead><tbody>';
             rn.expiring_merchants.forEach(function(m) {
                 html += '<tr><td style="font-weight:500">' + esc(m.name) + '</td><td>' + esc(m.expire) + '</td><td>' + esc(m.renewal || '—') + '</td></tr>';
@@ -705,14 +692,57 @@
             html += '</tbody></table></div>';
         }
         if (rn.renewed_merchants && rn.renewed_merchants.length > 0) {
-            html += '<div class="section-title">本周完成续约商户</div>';
+            html += '<div class="section-title">完成续约商户</div>';
             html += '<div class="table-wrap"><table><thead><tr><th>商户名称</th><th>到期日期</th><th>续约日期</th></tr></thead><tbody>';
             rn.renewed_merchants.forEach(function(m) {
                 html += '<tr><td style="font-weight:500">' + esc(m.name) + '</td><td>' + esc(m.expire) + '</td><td class="text-success">' + esc(m.renewal) + '</td></tr>';
             });
             html += '</tbody></table></div>';
         }
-        html += '<div class="info-card" style="margin-top:12px"><div class="info-row"><span class="info-label">备注</span><span class="info-value text-muted">' + esc(rn.remark) + '</span></div></div>';
+        if (rn.remark) {
+            html += '<div class="info-card" style="margin-top:12px"><div class="info-row"><span class="info-label">备注</span><span class="info-value text-muted">' + esc(rn.remark) + '</span></div></div>';
+        }
+        return html;
+    }
+
+    function renderCompliance() {
+        var c = D.compliance;
+        if (!c) return;
+        var html = '';
+        var timeLabel = c.report_time || '每周五16:00前更新';
+        html += '<div class="page-header"><div><h2>按期履约率统计表</h2><div class="breadcrumb">' + timeLabel + ' · 统计周期：' + c.week_label + '</div></div></div>';
+
+        // Tab navigation
+        html += '<div class="tab-nav" style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--rule)">';
+        html += '<div class="tab-item active" onclick="switchComplianceTab(\'onTime\', this)" style="padding:10px 20px;cursor:pointer;border-bottom:3px solid var(--accent);margin-bottom:-2px;font-weight:500;color:var(--accent)">按期履约率</div>';
+        html += '<div class="tab-item" onclick="switchComplianceTab(\'renewal\', this)" style="padding:10px 20px;cursor:pointer;color:var(--muted)">到期续约率</div>';
+        html += '<div class="tab-item" onclick="switchComplianceTab(\'unpaid\', this)" style="padding:10px 20px;cursor:pointer;color:var(--muted)">未收增减率</div>';
+        html += '</div>';
+
+        // === Tab 1: 按期履约率 ===
+        var ot = c.on_time;
+        html += '<div class="compliance-tab" id="compliance-tab-onTime">';
+        // Week section
+        html += renderOnTimeTable(ot.week, '本周按期履约情况（' + c.week_label.replace('至', '-') + '）');
+        // Cumulative section
+        if (ot.cumulative) {
+            html += '<div style="margin-top:24px;border-top:2px dashed var(--rule);padding-top:16px">';
+            html += renderOnTimeTable(ot.cumulative, ot.cumulative.label || '累计按期履约情况');
+            html += '</div>';
+        }
+        html += '</div>';
+
+        // === Tab 2: 到期续约率 ===
+        var rn = c.renewal;
+        html += '<div class="compliance-tab" id="compliance-tab-renewal" style="display:none">';
+        // Week section
+        html += renderRenewalSection(rn.week, '本周到期续约情况');
+        // Cumulative section
+        if (rn.cumulative) {
+            html += '<div style="margin-top:24px;border-top:2px dashed var(--rule);padding-top:16px">';
+            html += renderRenewalSection(rn.cumulative, rn.cumulative.label || '累计到期续约情况');
+            html += '</div>';
+        }
         html += '</div>';
 
         // === Tab 3: 未收增减率 ===
@@ -753,7 +783,14 @@
         html += '<td class="money" style="font-weight:600">' + money(uc.weekend_unpaid) + '</td>';
         var changeCls = uc.change_amount < 0 ? 'text-success' : 'text-danger';
         html += '<td class="money ' + changeCls + '" style="font-weight:600">' + (uc.change_amount >= 0 ? '+' : '') + money(uc.change_amount) + '</td>';
-        html += '<td class="money ' + changeCls + '" style="font-weight:600">' + (uc.change_rate >= 0 ? '+' : '') + uc.change_rate.toFixed(1) + '%</td>';
+        var rateDisplay;
+        if (uc.change_rate == null || uc.change_rate === undefined) {
+            rateDisplay = uc.change_rate_display || '—';
+            html += '<td class="money text-danger" style="font-weight:600">' + esc(rateDisplay) + '</td>';
+        } else {
+            rateDisplay = (uc.change_rate >= 0 ? '+' : '') + uc.change_rate.toFixed(1) + '%';
+            html += '<td class="money ' + changeCls + '" style="font-weight:600">' + rateDisplay + '</td>';
+        }
         html += '</tr></tbody></table></div>';
 
         // Early collected detail
@@ -815,8 +852,18 @@
     window.showRenewalDetail = function(type) {
         var c = D.compliance;
         if (!c) return;
-        var merchants = type === 'expiring' ? c.renewal.expiring_merchants : c.renewal.renewed_merchants;
-        var title = type === 'expiring' ? '本周到期商户（' + merchants.length + '户）' : '本周续约商户（' + merchants.length + '户）';
+        var rn = c.renewal;
+        var weekRn = rn.week || rn;
+        var cumRn = rn.cumulative;
+        var merchants = [];
+        var title = '';
+        if (type === 'expiring') {
+            merchants = (cumRn && cumRn.expiring_merchants ? cumRn.expiring_merchants : weekRn.expiring_merchants) || [];
+            title = '到期商户（' + merchants.length + '户）';
+        } else {
+            merchants = (cumRn && cumRn.renewed_merchants ? cumRn.renewed_merchants : weekRn.renewed_merchants) || [];
+            title = '续约商户（' + merchants.length + '户）';
+        }
 
         var modal = document.getElementById('modal-overlay');
         document.getElementById('modal-title').textContent = title;
