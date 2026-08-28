@@ -11,6 +11,7 @@
     function pct(a, b) { return b > 0 ? (a / b * 100).toFixed(1) + '%' : '0.0%'; }
     function esc(s) { return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function money(n) { return '¥' + fmt(n); }
+    function plainMoney(n) { return fmt(n); }
     function moneyWan(n) { return '¥' + fmtWan(n); }
 
     var COLORS = {
@@ -628,15 +629,15 @@
         html += clickableCount(ot.unpaid_deferred_count, 'onTime', period, 'unpaid_deferred', 'text-warning');
         html += clickableCount(ot.unpaid_other_count, 'onTime', period, 'unpaid_other', 'text-muted');
         html += clickableCount(ot.unpaid_subtotal_count, 'onTime', period, 'unpaid_subtotal', '');
-        // 金额 data
-        html += '<td class="money">' + money(ot.due_amount) + '</td>';
-        html += '<td class="money text-success">' + money(ot.finance_paid != null ? ot.finance_paid : ot.paid_amount) + '</td>';
-        html += '<td class="money text-success">' + money(ot.contract_paid != null ? ot.contract_paid : ot.paid_amount) + '</td>';
-        html += '<td class="money text-danger">' + money(ot.unpaid_no_plan_amount) + '</td>';
-        html += '<td class="money text-accent2">' + money(ot.unpaid_reduction_amount) + '</td>';
-        html += '<td class="money text-warning">' + money(ot.unpaid_deferred_amount) + '</td>';
-        html += '<td class="money text-muted">' + money(ot.unpaid_other_amount) + '</td>';
-        html += '<td class="money" style="font-weight:600">' + money(ot.unpaid_subtotal_amount) + '</td>';
+        // 金额 data (plain format without ¥ for easy Excel copy)
+        html += '<td class="money">' + plainMoney(ot.due_amount) + '</td>';
+        html += '<td class="money text-success">' + plainMoney(ot.finance_paid != null ? ot.finance_paid : ot.paid_amount) + '</td>';
+        html += '<td class="money text-success">' + plainMoney(ot.contract_paid != null ? ot.contract_paid : ot.paid_amount) + '</td>';
+        html += '<td class="money text-danger">' + plainMoney(ot.unpaid_no_plan_amount) + '</td>';
+        html += '<td class="money text-accent2">' + plainMoney(ot.unpaid_reduction_amount) + '</td>';
+        html += '<td class="money text-warning">' + plainMoney(ot.unpaid_deferred_amount) + '</td>';
+        html += '<td class="money text-muted">' + plainMoney(ot.unpaid_other_amount) + '</td>';
+        html += '<td class="money" style="font-weight:600">' + plainMoney(ot.unpaid_subtotal_amount) + '</td>';
         // 履约率
         html += '<td class="money" style="font-weight:600;color:var(--accent)">' + ot.count_compliance_rate.toFixed(1) + '%</td>';
         html += '<td class="money" style="font-weight:600;color:var(--accent)">' + ot.amount_compliance_rate.toFixed(1) + '%</td>';
@@ -744,26 +745,26 @@
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
         html += '<td style="text-align:center">国樾</td>';
-        // 探收金额 - clickable when > 0
+        // 探收金额 - clickable when > 0 (plain format without ¥ for easy Excel copy)
         if ((uc.advance_amount || 0) > 0) {
-            html += '<td class="money clickable-num" onclick="showComplianceDetail(\'unpaid\',\'\',\'advance\')">' + money(uc.advance_amount || 0) + '</td>';
+            html += '<td class="money clickable-num" onclick="showComplianceDetail(\'unpaid\',\'\',\'advance\')">' + plainMoney(uc.advance_amount || 0) + '</td>';
         } else {
-            html += '<td class="money">' + money(uc.advance_amount || 0) + '</td>';
+            html += '<td class="money">' + plainMoney(uc.advance_amount || 0) + '</td>';
         }
-        // 周初未收 - clickable when > 0
+        // 周初未收 - clickable when > 0 (plain format without ¥ for easy Excel copy)
         if ((uc.week_start_unpaid || 0) > 0) {
-            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'week_start\')">' + money(uc.week_start_unpaid) + '</td>';
+            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'week_start\')">' + plainMoney(uc.week_start_unpaid) + '</td>';
         } else {
-            html += '<td class="money" style="font-weight:600">' + money(uc.week_start_unpaid) + '</td>';
+            html += '<td class="money" style="font-weight:600">' + plainMoney(uc.week_start_unpaid) + '</td>';
         }
-        // 周末未收 - clickable when > 0
+        // 周末未收 - clickable when > 0 (plain format without ¥ for easy Excel copy)
         if ((uc.weekend_unpaid || 0) > 0) {
-            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'weekend\')">' + money(uc.weekend_unpaid) + '</td>';
+            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'weekend\')">' + plainMoney(uc.weekend_unpaid) + '</td>';
         } else {
-            html += '<td class="money" style="font-weight:600">' + money(uc.weekend_unpaid) + '</td>';
+            html += '<td class="money" style="font-weight:600">' + plainMoney(uc.weekend_unpaid) + '</td>';
         }
         var changeCls = uc.change_amount < 0 ? 'text-success' : 'text-danger';
-        html += '<td class="money ' + changeCls + '" style="font-weight:600">' + (uc.change_amount >= 0 ? '+' : '') + money(uc.change_amount) + '</td>';
+        html += '<td class="money ' + changeCls + '" style="font-weight:600">' + (uc.change_amount >= 0 ? '+' : '') + plainMoney(uc.change_amount) + '</td>';
         var rateDisplay;
         if (uc.change_rate == null || uc.change_rate === undefined) {
             rateDisplay = uc.change_rate_display || '—';
