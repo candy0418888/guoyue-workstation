@@ -631,7 +631,7 @@
         html += clickableCount(ot.unpaid_subtotal_count, 'onTime', period, 'unpaid_subtotal', '');
         // 金额 data (plain format without ¥ for easy Excel copy)
         html += '<td class="money">' + plainMoney(ot.due_amount) + '</td>';
-        html += '<td class="money text-success">' + plainMoney(ot.finance_paid != null ? ot.finance_paid : ot.paid_amount) + '</td>';
+        html += '<td class="money"></td>';
         html += '<td class="money text-success">' + plainMoney(ot.contract_paid != null ? ot.contract_paid : ot.paid_amount) + '</td>';
         html += '<td class="money text-danger">' + plainMoney(ot.unpaid_no_plan_amount) + '</td>';
         html += '<td class="money text-accent2">' + plainMoney(ot.unpaid_reduction_amount) + '</td>';
