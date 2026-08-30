@@ -590,89 +590,87 @@
     // ====== MODULE: COMPLIANCE (按期履约率统计) - 严格按Excel格式 ======
     function renderOnTimeTable(ot, sectionTitle, period) {
         var html = '';
+        var tblStyle = 'font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:1600px;border-collapse:collapse;text-align:center';
         html += '<div class="section-title">' + sectionTitle + '</div>';
-        html += '<div class="table-wrap"><table style="font-size:12px;min-width:1600px">';
+        html += '<div class="table-wrap"><table style="' + tblStyle + '">';
         html += '<thead><tr>';
-        html += '<th rowspan="2" style="min-width:100px">铁三角团队</th>';
-        html += '<th rowspan="2" style="min-width:80px">项目名称</th>';
+        html += '<th rowspan="2" style="min-width:100px;text-align:center">铁三角团队</th>';
+        html += '<th rowspan="2" style="min-width:80px;text-align:center">项目名称</th>';
         html += '<th colspan="7" style="text-align:center">户数</th>';
         html += '<th colspan="8" style="text-align:center">金额（元）</th>';
-        html += '<th rowspan="2" style="min-width:90px">户数履约率</th>';
-        html += '<th rowspan="2" style="min-width:90px">金额履约率</th>';
+        html += '<th rowspan="2" style="min-width:90px;text-align:center">户数履约率</th>';
+        html += '<th rowspan="2" style="min-width:90px;text-align:center">金额履约率</th>';
         html += '</tr><tr>';
-        // 户数 sub-headers
-        html += '<th style="min-width:70px">合同应收</th>';
-        html += '<th style="min-width:70px">合同实收</th>';
-        html += '<th style="min-width:80px">未收-无方案</th>';
-        html += '<th style="min-width:80px">未收-减免</th>';
-        html += '<th style="min-width:80px">未收-延期</th>';
-        html += '<th style="min-width:80px">未收-其他</th>';
-        html += '<th style="min-width:80px">未收户数小计</th>';
-        // 金额 sub-headers
-        html += '<th style="min-width:90px">合同应收</th>';
-        html += '<th style="min-width:90px">财务实收</th>';
-        html += '<th style="min-width:90px">合同实收</th>';
-        html += '<th style="min-width:80px">未收-无方案</th>';
-        html += '<th style="min-width:80px">未收-减免</th>';
-        html += '<th style="min-width:80px">未收-延期</th>';
-        html += '<th style="min-width:80px">未收-其他</th>';
-        html += '<th style="min-width:90px">未收金额小计</th>';
+        html += '<th style="min-width:70px;text-align:center">合同应收</th>';
+        html += '<th style="min-width:70px;text-align:center">合同实收</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-无方案</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-减免</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-延期</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-其他</th>';
+        html += '<th style="min-width:80px;text-align:center;font-weight:bold">未收户数小计</th>';
+        html += '<th style="min-width:90px;text-align:center">合同应收</th>';
+        html += '<th style="min-width:90px;text-align:center">财务实收</th>';
+        html += '<th style="min-width:90px;text-align:center">合同实收</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-无方案</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-减免</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-延期</th>';
+        html += '<th style="min-width:80px;text-align:center">未收-其他</th>';
+        html += '<th style="min-width:90px;text-align:center;font-weight:bold">未收金额小计</th>';
         html += '</tr></thead><tbody>';
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
         html += '<td style="text-align:center">国樾</td>';
-        // 户数 data - clickable
         html += clickableCount(ot.due_count, 'onTime', period, 'due', '');
         html += clickableCount(ot.paid_count, 'onTime', period, 'paid', 'text-success');
         html += clickableCount(ot.unpaid_no_plan_count, 'onTime', period, 'unpaid_no_plan', 'text-danger');
         html += clickableCount(ot.unpaid_reduction_count, 'onTime', period, 'unpaid_reduction', 'text-accent2');
         html += clickableCount(ot.unpaid_deferred_count, 'onTime', period, 'unpaid_deferred', 'text-warning');
         html += clickableCount(ot.unpaid_other_count, 'onTime', period, 'unpaid_other', 'text-muted');
-        html += clickableCount(ot.unpaid_subtotal_count, 'onTime', period, 'unpaid_subtotal', '');
-        // 金额 data (plain format without ¥ for easy Excel copy)
-        html += '<td class="money">' + plainMoney(ot.due_amount) + '</td>';
-        html += '<td class="money"></td>';
-        html += '<td class="money text-success">' + plainMoney(ot.contract_paid != null ? ot.contract_paid : ot.paid_amount) + '</td>';
-        html += '<td class="money text-danger">' + plainMoney(ot.unpaid_no_plan_amount) + '</td>';
-        html += '<td class="money text-accent2">' + plainMoney(ot.unpaid_reduction_amount) + '</td>';
-        html += '<td class="money text-warning">' + plainMoney(ot.unpaid_deferred_amount) + '</td>';
-        html += '<td class="money text-muted">' + plainMoney(ot.unpaid_other_amount) + '</td>';
-        html += '<td class="money" style="font-weight:600">' + plainMoney(ot.unpaid_subtotal_amount) + '</td>';
-        // 履约率
-        html += '<td class="money" style="font-weight:600;color:var(--accent)">' + ot.count_compliance_rate.toFixed(1) + '%</td>';
-        html += '<td class="money" style="font-weight:600;color:var(--accent)">' + ot.amount_compliance_rate.toFixed(1) + '%</td>';
+        html += clickableCount(ot.unpaid_subtotal_count, 'onTime', period, 'unpaid_subtotal', 'bold');
+        html += '<td class="money" style="text-align:center">' + plainMoney(ot.due_amount) + '</td>';
+        html += '<td class="money" style="text-align:center"></td>';
+        html += '<td class="money text-success" style="text-align:center">' + plainMoney(ot.contract_paid != null ? ot.contract_paid : ot.paid_amount) + '</td>';
+        html += '<td class="money text-danger" style="text-align:center">' + plainMoney(ot.unpaid_no_plan_amount) + '</td>';
+        html += '<td class="money text-accent2" style="text-align:center">' + plainMoney(ot.unpaid_reduction_amount) + '</td>';
+        html += '<td class="money text-warning" style="text-align:center">' + plainMoney(ot.unpaid_deferred_amount) + '</td>';
+        html += '<td class="money text-muted" style="text-align:center">' + plainMoney(ot.unpaid_other_amount) + '</td>';
+        html += '<td class="money" style="text-align:center;font-weight:bold">' + plainMoney(ot.unpaid_subtotal_amount) + '</td>';
+        html += '<td class="money" style="text-align:center;font-weight:600;color:var(--accent)">' + ot.count_compliance_rate.toFixed(1) + '%</td>';
+        html += '<td class="money" style="text-align:center;font-weight:600;color:var(--accent)">' + ot.amount_compliance_rate.toFixed(1) + '%</td>';
         html += '</tr></tbody></table></div>';
         return html;
     }
 
-    // Helper: generate a clickable count cell (only clickable when value > 0)
     function clickableCount(value, type, period, category, cls) {
-        var baseCls = 'money ' + (cls || '');
+        var boldFlag = cls === 'bold';
+        var extraCls = boldFlag ? '' : (cls || '');
+        var baseStyle = 'text-align:center' + (boldFlag ? ';font-weight:bold' : '');
+        var baseCls = 'money ' + extraCls;
         if (value > 0) {
-            return '<td class="' + baseCls + ' clickable-num" onclick="showComplianceDetail(\'' + type + '\',\'' + period + '\',\'' + category + '\')">' + value + '</td>';
+            return '<td class="' + baseCls.trim() + ' clickable-num" style="' + baseStyle + '" onclick="showComplianceDetail(\'' + type + '\',\'' + period + '\',\'' + category + '\')">' + value + '</td>';
         }
-        return '<td class="' + baseCls + '">' + value + '</td>';
+        return '<td class="' + baseCls.trim() + '" style="' + baseStyle + '">' + value + '</td>';
     }
 
     function renderRenewalTable(rn, sectionTitle, isCumulative, period) {
         var html = '';
         html += '<div class="section-title">' + sectionTitle + '</div>';
-        html += '<div class="table-wrap"><table style="font-size:13px;min-width:700px">';
+        html += '<div class="table-wrap"><table style="font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:700px;border-collapse:collapse;text-align:center">';
         html += '<thead><tr>';
-        html += '<th style="min-width:100px">铁三角团队</th>';
-        html += '<th style="min-width:80px">项目名称</th>';
+        html += '<th style="min-width:100px;text-align:center">铁三角团队</th>';
+        html += '<th style="min-width:80px;text-align:center">项目名称</th>';
         if (isCumulative) {
-            html += '<th style="min-width:120px">累计合同到期户数</th>';
-            html += '<th style="min-width:120px">累计续租户数</th>';
-            html += '<th style="min-width:120px">累计退租户数</th>';
-            html += '<th style="min-width:100px">累计续租率</th>';
+            html += '<th style="min-width:120px;text-align:center">累计合同到期户数</th>';
+            html += '<th style="min-width:120px;text-align:center">累计续租户数</th>';
+            html += '<th style="min-width:120px;text-align:center">累计退租户数</th>';
+            html += '<th style="min-width:100px;text-align:center">累计续租率</th>';
         } else {
-            html += '<th style="min-width:120px">本周合同到期户数</th>';
-            html += '<th style="min-width:120px">本周续租户数</th>';
-            html += '<th style="min-width:120px">本周退租户数</th>';
-            html += '<th style="min-width:100px">本周续租率</th>';
+            html += '<th style="min-width:120px;text-align:center">本周合同到期户数</th>';
+            html += '<th style="min-width:120px;text-align:center">本周续租户数</th>';
+            html += '<th style="min-width:120px;text-align:center">本周退租户数</th>';
+            html += '<th style="min-width:100px;text-align:center">本周续租率</th>';
         }
-        html += '<th style="min-width:150px">备注</th>';
+        html += '<th style="min-width:150px;text-align:center">备注</th>';
         html += '</tr></thead><tbody>';
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
@@ -686,8 +684,8 @@
         } else {
             rateText = '—';
         }
-        html += '<td class="money" style="font-weight:600;color:var(--accent)">' + rateText + '</td>';
-        html += '<td style="font-size:12px;color:var(--muted)">' + esc(rn.remark || '') + '</td>';
+        html += '<td class="money" style="text-align:center;font-weight:600;color:var(--accent)">' + rateText + '</td>';
+        html += '<td style="font-size:13px;color:var(--muted);text-align:center">' + esc(rn.remark || '') + '</td>';
         html += '</tr></tbody></table></div>';
         return html;
     }
@@ -732,46 +730,43 @@
         var uc = c.unpaid_change;
         html += '<div class="compliance-tab" id="compliance-tab-unpaid" style="display:none">';
         html += '<div class="section-title">本周明细（8.22-8.28）</div>';
-        html += '<div class="table-wrap"><table style="font-size:13px;min-width:800px">';
+        html += '<div class="table-wrap"><table style="font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:800px;border-collapse:collapse;text-align:center">';
         html += '<thead><tr>';
-        html += '<th style="min-width:100px">铁三角团队</th>';
-        html += '<th style="min-width:80px">项目名称</th>';
-        html += '<th style="min-width:120px">探收金额（元）</th>';
-        html += '<th style="min-width:120px">周初未收（元）</th>';
-        html += '<th style="min-width:120px">周末未收（元）</th>';
-        html += '<th style="min-width:120px">增减数额（元）</th>';
-        html += '<th style="min-width:100px">增减率</th>';
+        html += '<th style="min-width:100px;text-align:center">铁三角团队</th>';
+        html += '<th style="min-width:80px;text-align:center">项目名称</th>';
+        html += '<th style="min-width:120px;text-align:center">探收金额（元）</th>';
+        html += '<th style="min-width:120px;text-align:center">周初未收（元）</th>';
+        html += '<th style="min-width:120px;text-align:center">周末未收（元）</th>';
+        html += '<th style="min-width:120px;text-align:center">增减数额（元）</th>';
+        html += '<th style="min-width:100px;text-align:center">增减率</th>';
         html += '</tr></thead><tbody>';
         html += '<tr>';
         html += '<td style="text-align:center;font-weight:500">鎏金铁三角</td>';
         html += '<td style="text-align:center">国樾</td>';
-        // 探收金额 - clickable when > 0 (plain format without ¥ for easy Excel copy)
         if ((uc.advance_amount || 0) > 0) {
-            html += '<td class="money clickable-num" onclick="showComplianceDetail(\'unpaid\',\'\',\'advance\')">' + plainMoney(uc.advance_amount || 0) + '</td>';
+            html += '<td class="money clickable-num" style="text-align:center" onclick="showComplianceDetail(\'unpaid\',\'\',\'advance\')">' + plainMoney(uc.advance_amount || 0) + '</td>';
         } else {
-            html += '<td class="money">' + plainMoney(uc.advance_amount || 0) + '</td>';
+            html += '<td class="money" style="text-align:center">' + plainMoney(uc.advance_amount || 0) + '</td>';
         }
-        // 周初未收 - clickable when > 0 (plain format without ¥ for easy Excel copy)
         if ((uc.week_start_unpaid || 0) > 0) {
-            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'week_start\')">' + plainMoney(uc.week_start_unpaid) + '</td>';
+            html += '<td class="money clickable-num" style="text-align:center;font-weight:bold" onclick="showComplianceDetail(\'unpaid\',\'\',\'week_start\')">' + plainMoney(uc.week_start_unpaid) + '</td>';
         } else {
-            html += '<td class="money" style="font-weight:600">' + plainMoney(uc.week_start_unpaid) + '</td>';
+            html += '<td class="money" style="text-align:center;font-weight:bold">' + plainMoney(uc.week_start_unpaid) + '</td>';
         }
-        // 周末未收 - clickable when > 0 (plain format without ¥ for easy Excel copy)
         if ((uc.weekend_unpaid || 0) > 0) {
-            html += '<td class="money clickable-num" style="font-weight:600" onclick="showComplianceDetail(\'unpaid\',\'\',\'weekend\')">' + plainMoney(uc.weekend_unpaid) + '</td>';
+            html += '<td class="money clickable-num" style="text-align:center;font-weight:bold" onclick="showComplianceDetail(\'unpaid\',\'\',\'weekend\')">' + plainMoney(uc.weekend_unpaid) + '</td>';
         } else {
-            html += '<td class="money" style="font-weight:600">' + plainMoney(uc.weekend_unpaid) + '</td>';
+            html += '<td class="money" style="text-align:center;font-weight:bold">' + plainMoney(uc.weekend_unpaid) + '</td>';
         }
         var changeCls = uc.change_amount < 0 ? 'text-success' : 'text-danger';
-        html += '<td class="money ' + changeCls + '" style="font-weight:600">' + (uc.change_amount >= 0 ? '+' : '') + plainMoney(uc.change_amount) + '</td>';
+        html += '<td class="money ' + changeCls + '" style="text-align:center;font-weight:bold">' + (uc.change_amount >= 0 ? '+' : '') + plainMoney(uc.change_amount) + '</td>';
         var rateDisplay;
         if (uc.change_rate == null || uc.change_rate === undefined) {
             rateDisplay = uc.change_rate_display || '—';
-            html += '<td class="money ' + changeCls + '" style="font-weight:600">' + esc(rateDisplay) + '</td>';
+            html += '<td class="money ' + changeCls + '" style="text-align:center;font-weight:bold">' + esc(rateDisplay) + '</td>';
         } else {
             rateDisplay = (uc.change_rate >= 0 ? '+' : '') + uc.change_rate.toFixed(1) + '%';
-            html += '<td class="money ' + changeCls + '" style="font-weight:600">' + rateDisplay + '</td>';
+            html += '<td class="money ' + changeCls + '" style="text-align:center;font-weight:bold">' + rateDisplay + '</td>';
         }
         html += '</tr></tbody></table></div>';
         html += '</div>';
