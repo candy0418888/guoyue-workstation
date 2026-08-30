@@ -590,9 +590,10 @@
     // ====== MODULE: COMPLIANCE (按期履约率统计) - 严格按Excel格式 ======
     function renderOnTimeTable(ot, sectionTitle, period) {
         var html = '';
-        var tblStyle = 'font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:1600px;border-collapse:collapse;text-align:center';
+        var tblStyle = 'font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:1600px;border-collapse:collapse;text-align:center;background:#fff';
+        html += '<style>.ctbl td,.ctbl th{vertical-align:middle!important;background:#fff!important}</style>';
         html += '<div class="section-title">' + sectionTitle + '</div>';
-        html += '<div class="table-wrap"><table style="' + tblStyle + '">';
+        html += '<div class="table-wrap"><table class="ctbl" style="' + tblStyle + '">';
         html += '<thead><tr>';
         html += '<th rowspan="2" style="min-width:100px;text-align:center">铁三角团队</th>';
         html += '<th rowspan="2" style="min-width:80px;text-align:center">项目名称</th>';
@@ -655,7 +656,7 @@
     function renderRenewalTable(rn, sectionTitle, isCumulative, period) {
         var html = '';
         html += '<div class="section-title">' + sectionTitle + '</div>';
-        html += '<div class="table-wrap"><table style="font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:700px;border-collapse:collapse;text-align:center">';
+        html += '<div class="table-wrap"><table class="ctbl" style="font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:700px;border-collapse:collapse;text-align:center;background:#fff">';
         html += '<thead><tr>';
         html += '<th style="min-width:100px;text-align:center">铁三角团队</th>';
         html += '<th style="min-width:80px;text-align:center">项目名称</th>';
@@ -730,7 +731,7 @@
         var uc = c.unpaid_change;
         html += '<div class="compliance-tab" id="compliance-tab-unpaid" style="display:none">';
         html += '<div class="section-title">本周明细（8.22-8.28）</div>';
-        html += '<div class="table-wrap"><table style="font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:800px;border-collapse:collapse;text-align:center">';
+        html += '<div class="table-wrap"><table class="ctbl" style="font-family:Microsoft YaHei,微软雅黑;font-size:13px;min-width:800px;border-collapse:collapse;text-align:center;background:#fff">';
         html += '<thead><tr>';
         html += '<th style="min-width:100px;text-align:center">铁三角团队</th>';
         html += '<th style="min-width:80px;text-align:center">项目名称</th>';
